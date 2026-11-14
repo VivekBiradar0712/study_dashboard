@@ -853,7 +853,7 @@ with st.sidebar:
     # Theme Toggle at top
     col1, col2 = st.columns([3, 1])
     with col1:
-        st.markdown("## 📚 Study Dashboard")
+        st.markdown("## 📚 Study Monitor")
     with col2:
         if st.button("🌙" if st.session_state.theme == "light" else "☀️",
                      key="theme_toggle",
