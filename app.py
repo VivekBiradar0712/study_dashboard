@@ -744,6 +744,9 @@ if "session_file" not in st.session_state:
 # Subject editing states
 if "subject_edit_states" not in st.session_state:
     st.session_state.subject_edit_states = {}
+# Store selected subject for session start
+if "selected_subject_id" not in st.session_state:
+    st.session_state.selected_subject_id = None
 
 # =============================================================================
 # HELPER FUNCTIONS
@@ -933,6 +936,9 @@ if page == "🏠 Live Dashboard":
                 key="subject_selector"
             )
             selected_subject = db.get_subject(subject_options[selected_subject_name])
+            # Store subject_id for reliable session start
+            if selected_subject:
+                st.session_state.selected_subject_id = subject_options[selected_subject_name]
 
             # Show subject notes if any
             if selected_subject and (selected_subject.notes or selected_subject.note_file_path):
@@ -953,14 +959,17 @@ if page == "🏠 Live Dashboard":
             col_start, col_spacer = st.columns([1, 3])
             with col_start:
                 if st.button("▶️ Start Session", type="primary", use_container_width=True, key="start_btn"):
-                    subject_id = subject_options[selected_subject_name]
-                    new_session = db.create_session(subject_id)
-                    st.session_state.active_session = new_session
-                    st.session_state.timer_start_time = time_module.time()
-                    st.session_state.accumulated_seconds = 0
-                    st.session_state.session_notes = ""
-                    st.session_state.session_file = None
-                    st.rerun()
+                    subject_id = st.session_state.selected_subject_id or (subject_options[selected_subject_name] if 'selected_subject_name' in locals() else None)
+                    if subject_id:
+                        new_session = db.create_session(subject_id)
+                        st.session_state.active_session = new_session
+                        st.session_state.timer_start_time = time_module.time()
+                        st.session_state.accumulated_seconds = 0
+                        st.session_state.session_notes = ""
+                        st.session_state.session_file = None
+                        st.rerun()
+                    else:
+                        st.error("Please select a subject first")
 
         elif st.session_state.active_session:
             # Active session - show Pause and Stop
