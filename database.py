@@ -17,6 +17,10 @@ class Subject:
     color: str
     weekly_target_minutes: int = 0
     created_at: str = ""
+    notes: str = ""
+    note_file_path: str = ""
+    note_file_name: str = ""
+    note_file_type: str = ""
 
 
 @dataclass
@@ -30,6 +34,10 @@ class StudySession:
     duration_seconds: int
     status: str  # ACTIVE, PAUSED, COMPLETED, INTERRUPTED
     created_at: str
+    notes: str = ""
+    note_file_path: str = ""
+    note_file_name: str = ""
+    note_file_type: str = ""
 
 
 @dataclass
@@ -66,7 +74,11 @@ class StudyDatabase:
                     name TEXT NOT NULL UNIQUE,
                     color TEXT NOT NULL DEFAULT '#4338ca',
                     weekly_target_minutes INTEGER DEFAULT 0,
-                    created_at TEXT NOT NULL
+                    created_at TEXT NOT NULL,
+                    notes TEXT DEFAULT '',
+                    note_file_path TEXT DEFAULT '',
+                    note_file_name TEXT DEFAULT '',
+                    note_file_type TEXT DEFAULT ''
                 )
             """)
 
@@ -80,6 +92,10 @@ class StudyDatabase:
                     duration_seconds INTEGER DEFAULT 0,
                     status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'PAUSED', 'COMPLETED', 'INTERRUPTED')),
                     created_at TEXT NOT NULL,
+                    notes TEXT DEFAULT '',
+                    note_file_path TEXT DEFAULT '',
+                    note_file_name TEXT DEFAULT '',
+                    note_file_type TEXT DEFAULT '',
                     FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE RESTRICT
                 )
             """)
@@ -108,8 +124,8 @@ class StudyDatabase:
                 now = datetime.now().isoformat()
                 for name, color in default_subjects:
                     cursor.execute(
-                        "INSERT INTO subjects (id, name, color, weekly_target_minutes, created_at) VALUES (?, ?, ?, ?, ?)",
-                        (str(uuid.uuid4()), name, color, 0, now)
+                        "INSERT INTO subjects (id, name, color, weekly_target_minutes, created_at, notes, note_file_path, note_file_name, note_file_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        (str(uuid.uuid4()), name, color, 0, now, "", "", "", "")
                     )
 
             # Insert default goals if empty
@@ -129,26 +145,42 @@ class StudyDatabase:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM subjects ORDER BY name")
             rows = cursor.fetchall()
-            return [Subject(**dict(row)) for row in rows]
+            subjects = []
+            for row in rows:
+                d = dict(row)
+                # Set defaults for new fields if not present
+                d.setdefault('notes', '')
+                d.setdefault('note_file_path', '')
+                d.setdefault('note_file_name', '')
+                d.setdefault('note_file_type', '')
+                subjects.append(Subject(**d))
+            return subjects
 
     def get_subject(self, subject_id: str) -> Optional[Subject]:
         with self._get_conn() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM subjects WHERE id = ?", (subject_id,))
             row = cursor.fetchone()
-            return Subject(**dict(row)) if row else None
+            if row:
+                d = dict(row)
+                d.setdefault('notes', '')
+                d.setdefault('note_file_path', '')
+                d.setdefault('note_file_name', '')
+                d.setdefault('note_file_type', '')
+                return Subject(**d)
+            return None
 
-    def add_subject(self, name: str, color: str = "#4338ca", weekly_target: int = 0) -> Subject:
+    def add_subject(self, name: str, color: str = "#4338ca", weekly_target: int = 0, notes: str = "", note_file_path: str = "", note_file_name: str = "", note_file_type: str = "") -> Subject:
         subject_id = str(uuid.uuid4())
         now = datetime.now().isoformat()
         with self._get_conn() as conn:
             cursor = conn.cursor()
             cursor.execute(
-                "INSERT INTO subjects (id, name, color, weekly_target_minutes, created_at) VALUES (?, ?, ?, ?, ?)",
-                (subject_id, name, color, weekly_target, now)
+                "INSERT INTO subjects (id, name, color, weekly_target_minutes, created_at, notes, note_file_path, note_file_name, note_file_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (subject_id, name, color, weekly_target, now, notes, note_file_path, note_file_name, note_file_type)
             )
             conn.commit()
-        return Subject(id=subject_id, name=name, color=color, weekly_target_minutes=weekly_target, created_at=now)
+        return Subject(id=subject_id, name=name, color=color, weekly_target_minutes=weekly_target, created_at=now, notes=notes, note_file_path=note_file_path, note_file_name=note_file_name, note_file_type=note_file_type)
 
     def update_subject_target(self, subject_id: str, weekly_target_minutes: int):
         with self._get_conn() as conn:
@@ -156,6 +188,15 @@ class StudyDatabase:
             cursor.execute(
                 "UPDATE subjects SET weekly_target_minutes = ? WHERE id = ?",
                 (weekly_target_minutes, subject_id)
+            )
+            conn.commit()
+
+    def update_subject_notes(self, subject_id: str, notes: str, note_file_path: str = "", note_file_name: str = "", note_file_type: str = ""):
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE subjects SET notes = ?, note_file_path = ?, note_file_name = ?, note_file_type = ? WHERE id = ?",
+                (notes, note_file_path, note_file_name, note_file_type, subject_id)
             )
             conn.commit()
 
@@ -167,7 +208,7 @@ class StudyDatabase:
 
     # ==================== Session Methods ====================
 
-    def create_session(self, subject_id: str) -> StudySession:
+    def create_session(self, subject_id: str, notes: str = "", note_file_path: str = "", note_file_name: str = "", note_file_type: str = "") -> StudySession:
         session_id = str(uuid.uuid4())
         now = datetime.now().isoformat()
         with self._get_conn() as conn:
@@ -178,9 +219,9 @@ class StudyDatabase:
                 raise ValueError("Subject not found")
 
             cursor.execute(
-                """INSERT INTO study_sessions (id, subject_id, start_time, duration_seconds, status, created_at)
-                   VALUES (?, ?, ?, 0, 'ACTIVE', ?)""",
-                (session_id, subject_id, now, now)
+                """INSERT INTO study_sessions (id, subject_id, start_time, duration_seconds, status, created_at, notes, note_file_path, note_file_name, note_file_type)
+                   VALUES (?, ?, ?, 0, 'ACTIVE', ?, ?, ?, ?, ?)""",
+                (session_id, subject_id, now, now, notes, note_file_path, note_file_name, note_file_type)
             )
             conn.commit()
 
@@ -193,7 +234,11 @@ class StudyDatabase:
             end_time=None,
             duration_seconds=0,
             status="ACTIVE",
-            created_at=now
+            created_at=now,
+            notes=notes,
+            note_file_path=note_file_path,
+            note_file_name=note_file_name,
+            note_file_type=note_file_type
         )
 
     def get_active_session(self) -> Optional[StudySession]:
@@ -207,7 +252,14 @@ class StudyDatabase:
                 ORDER BY s.start_time DESC LIMIT 1
             """)
             row = cursor.fetchone()
-            return StudySession(**dict(row)) if row else None
+            if row:
+                d = dict(row)
+                d.setdefault('notes', '')
+                d.setdefault('note_file_path', '')
+                d.setdefault('note_file_name', '')
+                d.setdefault('note_file_type', '')
+                return StudySession(**d)
+            return None
 
     def get_paused_session(self) -> Optional[StudySession]:
         with self._get_conn() as conn:
@@ -220,7 +272,14 @@ class StudyDatabase:
                 ORDER BY s.start_time DESC LIMIT 1
             """)
             row = cursor.fetchone()
-            return StudySession(**dict(row)) if row else None
+            if row:
+                d = dict(row)
+                d.setdefault('notes', '')
+                d.setdefault('note_file_path', '')
+                d.setdefault('note_file_name', '')
+                d.setdefault('note_file_type', '')
+                return StudySession(**d)
+            return None
 
     def update_session_status(self, session_id: str, status: str, duration_seconds: int = None):
         with self._get_conn() as conn:
@@ -237,13 +296,13 @@ class StudyDatabase:
                 )
             conn.commit()
 
-    def complete_session(self, session_id: str, duration_seconds: int):
+    def complete_session(self, session_id: str, duration_seconds: int, notes: str = "", note_file_path: str = "", note_file_name: str = "", note_file_type: str = ""):
         end_time = datetime.now().isoformat()
         with self._get_conn() as conn:
             cursor = conn.cursor()
             cursor.execute(
-                "UPDATE study_sessions SET status = 'COMPLETED', end_time = ?, duration_seconds = ? WHERE id = ?",
-                (end_time, duration_seconds, session_id)
+                "UPDATE study_sessions SET status = 'COMPLETED', end_time = ?, duration_seconds = ?, notes = ?, note_file_path = ?, note_file_name = ?, note_file_type = ? WHERE id = ?",
+                (end_time, duration_seconds, notes, note_file_path, note_file_name, note_file_type, session_id)
             )
             conn.commit()
 
@@ -260,7 +319,15 @@ class StudyDatabase:
                 ORDER BY s.start_time DESC
             """, (start_of_day, end_of_day))
             rows = cursor.fetchall()
-            return [StudySession(**dict(row)) for row in rows]
+            sessions = []
+            for row in rows:
+                d = dict(row)
+                d.setdefault('notes', '')
+                d.setdefault('note_file_path', '')
+                d.setdefault('note_file_name', '')
+                d.setdefault('note_file_type', '')
+                sessions.append(StudySession(**d))
+            return sessions
 
     def get_sessions_for_week(self, week_start: date) -> List[StudySession]:
         week_end = week_start + timedelta(days=6)
@@ -276,7 +343,15 @@ class StudyDatabase:
                 ORDER BY s.start_time DESC
             """, (start_of_week, end_of_week))
             rows = cursor.fetchall()
-            return [StudySession(**dict(row)) for row in rows]
+            sessions = []
+            for row in rows:
+                d = dict(row)
+                d.setdefault('notes', '')
+                d.setdefault('note_file_path', '')
+                d.setdefault('note_file_name', '')
+                d.setdefault('note_file_type', '')
+                sessions.append(StudySession(**d))
+            return sessions
 
     def get_sessions_for_month(self, year: int, month: int) -> List[StudySession]:
         start_of_month = datetime(year, month, 1).isoformat()
@@ -294,7 +369,15 @@ class StudyDatabase:
                 ORDER BY s.start_time DESC
             """, (start_of_month, end_of_month))
             rows = cursor.fetchall()
-            return [StudySession(**dict(row)) for row in rows]
+            sessions = []
+            for row in rows:
+                d = dict(row)
+                d.setdefault('notes', '')
+                d.setdefault('note_file_path', '')
+                d.setdefault('note_file_name', '')
+                d.setdefault('note_file_type', '')
+                sessions.append(StudySession(**d))
+            return sessions
 
     def get_all_completed_sessions(self) -> List[StudySession]:
         with self._get_conn() as conn:
@@ -307,7 +390,15 @@ class StudyDatabase:
                 ORDER BY s.start_time DESC
             """)
             rows = cursor.fetchall()
-            return [StudySession(**dict(row)) for row in rows]
+            sessions = []
+            for row in rows:
+                d = dict(row)
+                d.setdefault('notes', '')
+                d.setdefault('note_file_path', '')
+                d.setdefault('note_file_name', '')
+                d.setdefault('note_file_type', '')
+                sessions.append(StudySession(**d))
+            return sessions
 
     def get_recent_sessions(self, limit: int = 10) -> List[StudySession]:
         with self._get_conn() as conn:
@@ -320,7 +411,15 @@ class StudyDatabase:
                 ORDER BY s.start_time DESC LIMIT ?
             """, (limit,))
             rows = cursor.fetchall()
-            return [StudySession(**dict(row)) for row in rows]
+            sessions = []
+            for row in rows:
+                d = dict(row)
+                d.setdefault('notes', '')
+                d.setdefault('note_file_path', '')
+                d.setdefault('note_file_name', '')
+                d.setdefault('note_file_type', '')
+                sessions.append(StudySession(**d))
+            return sessions
 
     # ==================== Goal Methods ====================
 
