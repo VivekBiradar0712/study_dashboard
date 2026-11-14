@@ -126,7 +126,7 @@ def inject_theme_css():
         --timer-accent: {theme['timer_accent']};
     }}
 
-    /* Global Styles */
+    /* Force theme on all Streamlit elements */
     .stApp {{
         background: var(--bg-primary) !important;
         color: var(--text-primary) !important;
@@ -144,7 +144,16 @@ def inject_theme_css():
         border-right: 1px solid var(--border);
     }}
 
-    section[data-testid="stSidebar"] .stMarkdown {{
+    section[data-testid="stSidebar"] * {{
+        color: var(--text-primary) !important;
+    }}
+
+    section[data-testid="stSidebar"] .stMarkdown,
+    section[data-testid="stSidebar"] .stMetric,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] div[data-testid="stMetricValue"] {{
         color: var(--text-primary) !important;
     }}
 
@@ -307,11 +316,14 @@ def inject_theme_css():
         box-shadow: var(--shadow);
     }}
 
-    /* Inputs */
+    /* Inputs - Comprehensive targeting */
     .stTextInput > div > div > input,
     .stNumberInput > div > div > input,
     .stTextArea > div > div > textarea,
-    .stSelectbox > div > div > div {{
+    .stSelectbox > div > div > div,
+    .stMultiSelect > div > div > div,
+    .stDateInput > div > div > input,
+    .stTimeInput > div > div > input {{
         background: var(--input-bg) !important;
         border: 1px solid var(--input-border) !important;
         color: var(--text-primary) !important;
@@ -319,9 +331,28 @@ def inject_theme_css():
     }}
     .stTextInput > div > div > input:focus,
     .stNumberInput > div > div > input:focus,
-    .stTextArea > div > div > textarea:focus {{
+    .stTextArea > div > div > textarea:focus,
+    .stSelectbox > div > div > div:focus {{
         border-color: var(--accent) !important;
         box-shadow: 0 0 0 3px var(--accent-light) !important;
+    }}
+
+    /* Selectbox dropdown */
+    .stSelectbox [data-baseweb="select"] > div {{
+        background: var(--input-bg) !important;
+        border-color: var(--input-border) !important;
+    }}
+    .stSelectbox [data-baseweb="popover"] [role="listbox"] {{
+        background: var(--bg-secondary) !important;
+        border: 1px solid var(--border) !important;
+    }}
+    .stSelectbox [role="option"] {{
+        color: var(--text-primary) !important;
+        background: var(--bg-secondary) !important;
+    }}
+    .stSelectbox [role="option"]:hover {{
+        background: var(--accent-light) !important;
+        color: var(--accent) !important;
     }}
 
     /* Tabs */
@@ -354,6 +385,9 @@ def inject_theme_css():
         color: var(--text-primary) !important;
         font-weight: 600 !important;
     }}
+    .streamlit-expanderHeader:hover {{
+        border-color: var(--accent) !important;
+    }}
     .streamlit-expanderContent {{
         background: var(--bg-primary) !important;
         border: 1px solid var(--border) !important;
@@ -366,6 +400,9 @@ def inject_theme_css():
         background: var(--bg-secondary) !important;
         border-radius: 12px !important;
         border: 1px solid var(--border) !important;
+    }}
+    .stDataFrame * {{
+        color: var(--text-primary) !important;
     }}
 
     /* Progress bar */
@@ -395,6 +432,12 @@ def inject_theme_css():
         border-color: var(--accent) !important;
         background: var(--accent-light) !important;
     }}
+    .stFileUploader label {{
+        color: var(--text-primary) !important;
+    }}
+    .stFileUploader small {{
+        color: var(--text-muted) !important;
+    }}
 
     /* Radio */
     .stRadio > div {{
@@ -413,6 +456,16 @@ def inject_theme_css():
     }}
     .stRadio [data-testid="stMarkdownContainer"] p {{
         font-weight: 500 !important;
+        color: var(--text-primary) !important;
+    }}
+
+    /* Checkbox */
+    .stCheckbox label {{
+        color: var(--text-primary) !important;
+    }}
+
+    /* Slider */
+    .stSlider label {{
         color: var(--text-primary) !important;
     }}
 
@@ -566,6 +619,96 @@ def inject_theme_css():
         border-top: 1px solid var(--border);
         margin-top: 3rem;
     }}
+
+    /* Markdown text color fix */
+    .stMarkdown,
+    .stMarkdown p,
+    .stMarkdown span,
+    .stMarkdown div,
+    .stMarkdown h1,
+    .stMarkdown h2,
+    .stMarkdown h3,
+    .stMarkdown h4,
+    .stMarkdown h5,
+    .stMarkdown h6,
+    .stMarkdown li,
+    .stMarkdown strong,
+    .stMarkdown em {{
+        color: var(--text-primary) !important;
+    }}
+
+    .stMarkdown small,
+    .stMarkdown .caption,
+    .stCaption {{
+        color: var(--text-muted) !important;
+    }}
+
+    /* Form submit button */
+    .stFormSubmitButton > button {{
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%) !important;
+        color: white !important;
+    }}
+
+    /* Number input stepper buttons */
+    .stNumberInput button {{
+        background: var(--bg-tertiary) !important;
+        color: var(--text-primary) !important;
+        border: 1px solid var(--border) !important;
+    }}
+
+    /* Tooltip */
+    .stTooltipContent {{
+        background: var(--bg-secondary) !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text-primary) !important;
+    }}
+
+    /* Alert/Success/Error/Info */
+    .stAlert {{
+        background: var(--bg-secondary) !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text-primary) !important;
+    }}
+    .stSuccess {{
+        background: var(--success-light) !important;
+        border-color: var(--success) !important;
+        color: var(--success) !important;
+    }}
+    .stError {{
+        background: var(--danger-light) !important;
+        border-color: var(--danger) !important;
+        color: var(--danger) !important;
+    }}
+    .stWarning {{
+        background: var(--warning-light) !important;
+        border-color: var(--warning) !important;
+        color: var(--warning) !important;
+    }}
+    .stInfo {{
+        background: var(--accent-light) !important;
+        border-color: var(--accent) !important;
+        color: var(--accent) !important;
+    }}
+
+    /* Data editor */
+    .stDataEditor {{
+        background: var(--bg-secondary) !important;
+    }}
+
+    /* Metric delta */
+    [data-testid="stMetricDelta"] {{
+        color: var(--text-secondary) !important;
+    }}
+
+    /* Select slider */
+    .stSelectSlider label {{
+        color: var(--text-primary) !important;
+    }}
+
+    /* Column gap */
+    .stColumns > div {{
+        background: transparent !important;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -598,6 +741,9 @@ if "session_notes" not in st.session_state:
     st.session_state.session_notes = ""
 if "session_file" not in st.session_state:
     st.session_state.session_file = None
+# Subject editing states
+if "subject_edit_states" not in st.session_state:
+    st.session_state.subject_edit_states = {}
 
 # =============================================================================
 # HELPER FUNCTIONS
@@ -799,14 +945,13 @@ if page == "🏠 Live Dashboard":
                         f"{selected_subject.name} Notes"
                     )
 
-        # Session Controls
-        control_cols = st.columns(4)
+        # Session Controls - Clean single-button layout
+        st.markdown("### Controls")
 
         if not current_session:
-            # No active session - show Start button
-            with control_cols[0]:
-                st.button("▶️ Start", disabled=True, use_container_width=True)
-            with control_cols[1]:
+            # No active session - show single Start button
+            col_start, col_spacer = st.columns([1, 3])
+            with col_start:
                 if st.button("▶️ Start Session", type="primary", use_container_width=True, key="start_btn"):
                     subject_id = subject_options[selected_subject_name]
                     new_session = db.create_session(subject_id)
@@ -816,16 +961,11 @@ if page == "🏠 Live Dashboard":
                     st.session_state.session_notes = ""
                     st.session_state.session_file = None
                     st.rerun()
-            with control_cols[2]:
-                st.button("⏸️ Pause", disabled=True, use_container_width=True)
-            with control_cols[3]:
-                st.button("⏹️ Stop", disabled=True, use_container_width=True)
 
         elif st.session_state.active_session:
             # Active session - show Pause and Stop
-            with control_cols[0]:
-                st.button("▶️ Start", disabled=True, use_container_width=True)
-            with control_cols[1]:
+            col_pause, col_stop, col_spacer = st.columns([1, 1, 2])
+            with col_pause:
                 if st.button("⏸️ Pause", use_container_width=True, key="pause_btn"):
                     session = st.session_state.active_session
                     current_duration = get_current_session_time()
@@ -835,7 +975,7 @@ if page == "🏠 Live Dashboard":
                     st.session_state.paused_session.duration_seconds = current_duration
                     st.session_state.timer_start_time = None
                     st.rerun()
-            with control_cols[2]:
+            with col_stop:
                 if st.button("⏹️ Stop", type="primary", use_container_width=True, key="stop_active_btn"):
                     session = st.session_state.active_session
                     current_duration = get_current_session_time()
@@ -847,21 +987,18 @@ if page == "🏠 Live Dashboard":
                     st.session_state.session_file = None
                     st.success(f"Session completed! Duration: {format_duration(current_duration)}")
                     st.rerun()
-            with control_cols[3]:
-                st.write("")
 
         elif st.session_state.paused_session:
             # Paused session - show Resume and Stop
-            with control_cols[0]:
-                st.button("▶️ Start", disabled=True, use_container_width=True)
-            with control_cols[1]:
+            col_resume, col_stop, col_spacer = st.columns([1, 1, 2])
+            with col_resume:
                 if st.button("▶️ Resume", type="primary", use_container_width=True, key="resume_btn"):
                     session = st.session_state.paused_session
                     st.session_state.active_session = session
                     st.session_state.paused_session = None
                     st.session_state.timer_start_time = time_module.time()
                     st.rerun()
-            with control_cols[2]:
+            with col_stop:
                 if st.button("⏹️ Stop", use_container_width=True, key="stop_paused_btn"):
                     session = st.session_state.paused_session
                     db.complete_session(session.id, session.duration_seconds, st.session_state.session_notes, "", "", "")
@@ -871,8 +1008,6 @@ if page == "🏠 Live Dashboard":
                     st.session_state.session_file = None
                     st.success(f"Session completed! Duration: {format_duration(session.duration_seconds)}")
                     st.rerun()
-            with control_cols[3]:
-                st.write("")
 
         # Session Notes & File Upload (for active/paused sessions)
         if current_session:
@@ -1291,6 +1426,11 @@ elif page == "🎯 Goals & Subjects":
             actual, target = db.get_subject_weekly_progress(subj.id, week_start)
             progress = min(actual / target * 100, 100) if target > 0 else 0
 
+            # Initialize edit state if not exists
+            edit_key = f"editing_{subj.id}"
+            if edit_key not in st.session_state.subject_edit_states:
+                st.session_state.subject_edit_states[edit_key] = False
+
             with st.container():
                 # Subject header with color indicator
                 st.markdown(f"""
@@ -1330,9 +1470,11 @@ elif page == "🎯 Goals & Subjects":
                         st.rerun()
 
                 with col3:
-                    # Edit notes/files
-                    if st.button("📝 Edit Notes", key=f"edit_{subj.id}", use_container_width=True):
-                        st.session_state[f"editing_{subj.id}"] = True
+                    # Edit notes/files - toggle button
+                    is_editing = st.session_state.subject_edit_states.get(edit_key, False)
+                    btn_label = "📝 Close" if is_editing else "📝 Edit Notes"
+                    if st.button(btn_label, key=f"edit_{subj.id}", use_container_width=True):
+                        st.session_state.subject_edit_states[edit_key] = not is_editing
                         st.rerun()
 
                 with col4:
@@ -1341,30 +1483,32 @@ elif page == "🎯 Goals & Subjects":
                         st.success(f"Deleted {subj.name}")
                         st.rerun()
 
-                # Inline edit form for notes
-                if st.session_state.get(f"editing_{subj.id}", False):
-                    with st.form(f"edit_form_{subj.id}"):
-                        st.markdown("**Edit Notes & Files**")
-                        edit_notes = st.text_area("Notes", value=subj.notes, height=100)
-                        edit_file = st.file_uploader("Replace file", type=['pdf', 'doc', 'docx', 'txt', 'md'], key=f"edit_file_{subj.id}")
+                # Collapsible edit section for notes
+                if st.session_state.subject_edit_states.get(edit_key, False):
+                    with st.container():
+                        st.markdown("---")
+                        with st.form(f"edit_form_{subj.id}"):
+                            st.markdown("**Edit Notes & Files**")
+                            edit_notes = st.text_area("Notes", value=subj.notes, height=100, key=f"notes_{subj.id}")
+                            edit_file = st.file_uploader("Replace file", type=['pdf', 'doc', 'docx', 'txt', 'md'], key=f"edit_file_{subj.id}")
 
-                        c1, c2 = st.columns(2)
-                        with c1:
-                            if st.form_submit_button("Save", type="primary", use_container_width=True):
-                                file_path, file_name, file_type = save_uploaded_file(edit_file, "subject") if edit_file else (subj.note_file_path, subj.note_file_name, subj.note_file_type)
-                                db.update_subject_notes(subj.id, edit_notes, file_path, file_name, file_type)
-                                st.session_state[f"editing_{subj.id}"] = False
-                                st.success("Updated!")
-                                st.rerun()
-                        with c2:
-                            if st.form_submit_button("Cancel", use_container_width=True):
-                                st.session_state[f"editing_{subj.id}"] = False
-                                st.rerun()
+                            c1, c2 = st.columns(2)
+                            with c1:
+                                if st.form_submit_button("Save", type="primary", use_container_width=True):
+                                    file_path, file_name, file_type = save_uploaded_file(edit_file, "subject") if edit_file else (subj.note_file_path, subj.note_file_name, subj.note_file_type)
+                                    db.update_subject_notes(subj.id, edit_notes, file_path, file_name, file_type)
+                                    st.session_state.subject_edit_states[edit_key] = False
+                                    st.success("Updated!")
+                                    st.rerun()
+                            with c2:
+                                if st.form_submit_button("Cancel", use_container_width=True):
+                                    st.session_state.subject_edit_states[edit_key] = False
+                                    st.rerun()
 
-                    # Show existing notes/files
-                    if subj.notes or subj.note_file_path:
-                        st.markdown("**Current Notes & Files:**")
-                        display_note_card(subj.notes, subj.note_file_path, subj.note_file_name, subj.note_file_type)
+                # Show existing notes/files (always visible, not just when editing)
+                if subj.notes or subj.note_file_path:
+                    st.markdown("**Current Notes & Files:**")
+                    display_note_card(subj.notes, subj.note_file_path, subj.note_file_name, subj.note_file_type)
 
 # =============================================================================
 # PAGE 4: SESSION HISTORY
