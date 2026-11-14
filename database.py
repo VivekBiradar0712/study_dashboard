@@ -138,6 +138,42 @@ class StudyDatabase:
 
             conn.commit()
 
+            # Migration: Add missing columns to existing tables
+            self._migrate_schema()
+
+    def _migrate_schema(self):
+        """Add missing columns to existing tables"""
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+
+            # Check and add missing columns to subjects table
+            cursor.execute("PRAGMA table_info(subjects)")
+            subject_columns = [row[1] for row in cursor.fetchall()]
+
+            if 'notes' not in subject_columns:
+                cursor.execute("ALTER TABLE subjects ADD COLUMN notes TEXT DEFAULT ''")
+            if 'note_file_path' not in subject_columns:
+                cursor.execute("ALTER TABLE subjects ADD COLUMN note_file_path TEXT DEFAULT ''")
+            if 'note_file_name' not in subject_columns:
+                cursor.execute("ALTER TABLE subjects ADD COLUMN note_file_name TEXT DEFAULT ''")
+            if 'note_file_type' not in subject_columns:
+                cursor.execute("ALTER TABLE subjects ADD COLUMN note_file_type TEXT DEFAULT ''")
+
+            # Check and add missing columns to study_sessions table
+            cursor.execute("PRAGMA table_info(study_sessions)")
+            session_columns = [row[1] for row in cursor.fetchall()]
+
+            if 'notes' not in session_columns:
+                cursor.execute("ALTER TABLE study_sessions ADD COLUMN notes TEXT DEFAULT ''")
+            if 'note_file_path' not in session_columns:
+                cursor.execute("ALTER TABLE study_sessions ADD COLUMN note_file_path TEXT DEFAULT ''")
+            if 'note_file_name' not in session_columns:
+                cursor.execute("ALTER TABLE study_sessions ADD COLUMN note_file_name TEXT DEFAULT ''")
+            if 'note_file_type' not in session_columns:
+                cursor.execute("ALTER TABLE study_sessions ADD COLUMN note_file_type TEXT DEFAULT ''")
+
+            conn.commit()
+
     # ==================== Subject Methods ====================
 
     def get_all_subjects(self) -> List[Subject]:
