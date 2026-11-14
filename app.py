@@ -16,7 +16,7 @@ from database import StudyDatabase, StudySession, Subject, StudyGoal
 
 # Page configuration
 st.set_page_config(
-    page_title="Study Monitor Dashboard",
+    page_title="Study Analytics Lookout",
     page_icon="📚",
     layout="wide",
     initial_sidebar_state="expanded"
